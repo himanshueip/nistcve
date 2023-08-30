@@ -1,9 +1,22 @@
 $!echo "CERT creation shell script"
-
+APP=cve
 if [ $1 = "clean" ]; then
 echo $pwd
 rm -rf cert; 
 echo "clean";
+exit
+fi
+
+if [ $1 = "install" ]; then
+if [ "$EUID" -ne 0 ]; then
+echo "run as root"
+exit
+fi
+mkdir /usr/local/share/ca-certificates/$APP
+cp localhost.crt /usr/local/share/ca-certificates/$APP
+chmod 755 /usr/local/share/ca-certificates/$APP
+chmod 644 /usr/local/share/ca-certificates/$APP/localhost.crt
+update-ca-certificates 
 exit
 fi
 mkdir cert
@@ -29,4 +42,3 @@ openssl genrsa -out localhost.key -des3 2048
 openssl req -new -key localhost.key -out localhost.csr
 openssl x509 -req -in localhost.csr -CA ../CA.pem -CAkey ../CA.key -CAcreateserial -days 3650 -sha256 -extfile localhost.ext -out localhost.crt
 openssl rsa -in localhost.key -out localhost.decrypted.key
-
